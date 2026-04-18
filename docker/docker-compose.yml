@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  catalog:
+    build:
+      context: ..
+      dockerfile: docker/catalog.Dockerfile
+    ports:
+      - "3001:3001"
+    container_name: catalog-service
+    networks:
+      - bazar-network
+    environment:
+      - NODE_ENV=production
+
+  order:
+    build:
+      context: ..
+      dockerfile: docker/order.Dockerfile
+    ports:
+      - "3002:3002"
+    container_name: order-service
+    depends_on:
+      - catalog
+    networks:
+      - bazar-network
+    environment:
+      - NODE_ENV=production
+      - CATALOG_URL=http://catalog:3001
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/frontend.Dockerfile
+    ports:
+      - "3000:3000"
+    container_name: frontend-service
+    depends_on:
+      - catalog
+      - order
+    networks:
+      - bazar-network
+    environment:
+      - NODE_ENV=production
+      - CATALOG_URL=http://catalog:3001
+      - ORDER_URL=http://order:3002
+
+networks:
+  bazar-network:
+    driver: bridge
