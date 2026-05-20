@@ -1,19 +1,24 @@
-const axios = require('axios');
+// frontend/routes/search.js
+// Lab 2: routes search requests to catalog replicas using round-robin load balancing.
+// Search results are NOT cached (caching is only for item-level info lookups).
 
-const CATALOG_URL = process.env.CATALOG_URL || 'http://localhost:3001';
+const axios = require("axios");
 
-// GET /search/:topic - proxy call to catalog service
+// GET /search/:topic
 async function searchBooks(req, res) {
   const topic = req.params.topic;
-  
+
+  // Pick a catalog replica using round-robin
+  const catalogUrl = req.app.locals.getNextReplica("catalog");
+
   try {
-    const catalogRes = await axios.get(`${CATALOG_URL}/search/${topic}`);
-    res.json(catalogRes.data);
+    const catalogRes = await axios.get(`${catalogUrl}/search/${topic}`);
+    return res.json(catalogRes.data);
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      return res.status(404).json({ error: 'No books found for this topic' });
+      return res.status(404).json({ error: "No books found for this topic" });
     }
-    res.status(500).json({ error: 'Search failed', details: error.message });
+    res.status(500).json({ error: "Search failed", details: error.message });
   }
 }
 
