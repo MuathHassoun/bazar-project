@@ -1,29 +1,28 @@
-// order/server.js
-// Lab 2: added PEER_ORDER_URL env var and POST /sync/order endpoint
-// so replicas can receive synced order logs from each other.
+// order/index.js
+// Lab 2: reads PORT, CATALOG_URL, PEER_ORDER_URL from env vars
 
 const express = require("express");
 const bodyParser = require("body-parser");
 const fs = require("fs");
 const path = require("path");
-const { purchaseBook } = require("./routes/purchase");
 
 const app = express();
+const PORT = parseInt(process.env.PORT) || 3002;
 
-// Replica 1 runs on 3002, Replica 2 runs on 3004
-const PORT = process.env.PORT || 3002;
+// Set defaults here so routes can use process.env safely
+if (!process.env.CATALOG_URL) process.env.CATALOG_URL = "http://localhost:3001";
+if (!process.env.PEER_ORDER_URL)
+  process.env.PEER_ORDER_URL = "http://localhost:3004";
 
+const { purchaseBook } = require("./routes/purchase");
 const ordersPath = path.join(__dirname, "data/orders.json");
 
-// Middleware
 app.use(bodyParser.json());
 
-// ── Existing route (unchanged from Lab 1) ─────────────────────────────────────
+// Purchase route
 app.post("/purchase/:id", purchaseBook);
 
-// ── Sync endpoint: receives a replicated order from the peer replica ──────────
-// The peer calls POST /sync/order?sync=true with { order } in the body.
-// We simply append it to our local orders.json to stay in sync.
+// Sync endpoint: receives replicated order from peer replica
 app.post("/sync/order", (req, res) => {
   const { order } = req.body;
   if (!order) {
@@ -35,7 +34,6 @@ app.post("/sync/order", (req, res) => {
       ? JSON.parse(fs.readFileSync(ordersPath, "utf8"))
       : [];
 
-    // Avoid duplicates if sync is called more than once
     const exists = orders.some((o) => o.orderId === order.orderId);
     if (!exists) {
       orders.push(order);
@@ -49,13 +47,8 @@ app.post("/sync/order", (req, res) => {
   }
 });
 
-// Start server
 app.listen(PORT, () => {
   console.log(`Order Server running on http://localhost:${PORT}`);
-  console.log(
-    `Peer replica: ${process.env.PEER_ORDER_URL || "none (set PEER_ORDER_URL)"}`,
-  );
-  console.log(
-    `Catalog:      ${process.env.CATALOG_URL || "http://localhost:3001 (default)"}`,
-  );
+  console.log(`Catalog:      ${process.env.CATALOG_URL}`);
+  console.log(`Peer replica: ${process.env.PEER_ORDER_URL}`);
 });

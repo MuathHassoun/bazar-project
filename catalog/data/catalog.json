@@ -4,14 +4,14 @@
     "title": "How to get a good grade in DOS in 40 minutes a day",
     "topic": "distributed systems",
     "price": 40,
-    "quantity": 8
+    "quantity": 1
   },
   {
     "id": 2,
     "title": "RPCs for Noobs",
     "topic": "distributed systems",
     "price": 50,
-    "quantity": 4
+    "quantity": 0
   },
   {
     "id": 3,
