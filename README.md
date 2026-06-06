@@ -1,7 +1,7 @@
 # Bazar.com - A Multi-tier Online Bookstore
 
 **Muath Hassoun - 12218039**  
-**Individual Submission**  
+**Abed Jarrar**
 **Lab 1 for Distributed and Operating Systems (Spring 2026)**
 
 Bazar.com is a distributed online bookstore implemented as a multi-tier microservices architecture using Node.js and Express. The system consists of three independent services that communicate via HTTP REST APIs: a Catalog service for book inventory management, an Order service for purchase processing, and a Frontend service that acts as the user-facing API gateway. The application demonstrates key distributed systems concepts including service decomposition, inter-service communication, and containerization with Docker.
